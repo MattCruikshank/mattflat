@@ -1,5 +1,7 @@
 import { world, system } from "@minecraft/server";
 
+console.warn("[mattflat] Script loaded successfully");
+
 const RENDER_DISTANCE = 4;
 const CHUNKS_PER_TICK = 1;
 const TICK_INTERVAL = 20;
@@ -73,6 +75,8 @@ function initializeChunk(dimension, chunkX, chunkZ) {
 
 function queueChunksForPlayers() {
   const players = world.getAllPlayers();
+  const newChunks = [];
+
   for (const player of players) {
     const pos = player.location;
     const cx = Math.floor(pos.x / 16);
@@ -82,11 +86,15 @@ function queueChunksForPlayers() {
       for (let dz = -RENDER_DISTANCE; dz <= RENDER_DISTANCE; dz++) {
         const key = `${cx + dx},${cz + dz}`;
         if (!generatedChunks.has(key) && !chunkQueue.includes(key)) {
-          chunkQueue.push(key);
+          newChunks.push({ key, dist: dx * dx + dz * dz });
         }
       }
     }
   }
+
+  // Sort closest first and prepend to front of queue
+  newChunks.sort((a, b) => a.dist - b.dist);
+  chunkQueue = newChunks.map(c => c.key).concat(chunkQueue);
 }
 
 function processChunkQueue() {
@@ -108,6 +116,14 @@ function processChunkQueue() {
     saveGeneratedChunks();
   }
 }
+
+world.afterEvents.playerSpawn.subscribe((event) => {
+  const player = event.player;
+  const pos = player.location;
+  console.warn(`[mattflat] Teleporting ${player.name} to surface`);
+  player.teleport({ x: pos.x, y: 46, z: pos.z });
+  player.sendMessage("Welcome to MattFlat! You have been teleported to the surface.");
+});
 
 system.run(() => {
   loadGeneratedChunks();
