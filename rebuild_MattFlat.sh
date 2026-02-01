@@ -1,4 +1,8 @@
 #!/bin/bash
+
+# cd /mnt/disk1/appdata/binhex-minecraftbedrockserver/minecraft/behavior_packs/mattflat
+# ./rebuilt_MattFlat.sh
+
 echo "Stopping server..."
 docker stop binhex-minecraftbedrockserver
 echo "...done"

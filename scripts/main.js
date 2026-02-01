@@ -1,4 +1,4 @@
-import { world, system } from "@minecraft/server";
+import { world, system, ItemStack } from "@minecraft/server";
 
 console.warn("[mattflat] Script loaded successfully");
 
@@ -19,22 +19,28 @@ const LAYER_STRING =
   "minecraft:stone," +
   "2*minecraft:shroomlight," +
   "minecraft:stone," +
-  "2*minecraft:redstone_ore," +
+  "2*minecraft:redstone_block," +
   "minecraft:stone," +
-  "2*minecraft:lapis_ore," +
+  "2*minecraft:lapis_block," +
   "minecraft:stone," +
-  "2*minecraft:gold_ore," +
+  "2*minecraft:gold_block," +
   "minecraft:stone," +
-  "2*minecraft:emerald_ore," +
+  "2*minecraft:emerald_block," +
   "minecraft:stone," +
-  "2*minecraft:diamond_ore," +
+  "2*minecraft:gravel," +
   "minecraft:stone," +
-  "2*minecraft:iron_ore," +
+  "2*minecraft:diamond_block," +
   "minecraft:stone," +
-  "2*minecraft:coal_ore," +
+  "2*minecraft:copper_block," +
+  "minecraft:stone," +
+  "2*minecraft:bone_block," +
+  "minecraft:stone," +
+  "2*minecraft:iron_block," +
+  "minecraft:stone," +
+  "2*minecraft:coal_block," +
   "4*minecraft:stone," +
-  "2*minecraft:oak_log," +
-  "5*minecraft:dirt," +
+  "4*minecraft:oak_log," +
+  "2*minecraft:dirt," +
   "minecraft:grass_block";
 
 // Parse layer string once at load time into an array of block types indexed from y=-64 upward
@@ -53,6 +59,7 @@ function parseLayers(str) {
 }
 
 const LAYERS = parseLayers(LAYER_STRING);
+const SURFACE_Y = -64 + LAYERS.length + 1;
 
 let generatedChunks = new Set();
 let chunkQueue = [];
@@ -155,11 +162,41 @@ world.afterEvents.playerSpawn.subscribe((event) => {
       saveGeneratedChunks();
     }
     console.warn(`[mattflat] Teleporting ${player.name} to chunk center (${targetX}, 46, ${targetZ})`);
-    player.teleport({ x: targetX, y: 46, z: targetZ });
+    player.teleport({ x: targetX, y: SURFACE_Y, z: targetZ });
+
+    // Place starter chest next to spawn
+    const overworld2 = world.getDimension("overworld");
+    const chestBlock = overworld2.getBlock({ x: targetX + 1, y: SURFACE_Y, z: targetZ });
+    if (chestBlock) {
+      chestBlock.setType("minecraft:chest");
+      const container = chestBlock.getComponent("inventory")?.container;
+      if (container) {
+        // Saplings - 4 of each type
+        container.addItem(new ItemStack("minecraft:oak_sapling", 4));
+        container.addItem(new ItemStack("minecraft:spruce_sapling", 4));
+        container.addItem(new ItemStack("minecraft:birch_sapling", 4));
+        container.addItem(new ItemStack("minecraft:jungle_sapling", 4));
+        container.addItem(new ItemStack("minecraft:acacia_sapling", 4));
+        container.addItem(new ItemStack("minecraft:dark_oak_sapling", 4));
+        container.addItem(new ItemStack("minecraft:cherry_sapling", 4));
+        container.addItem(new ItemStack("minecraft:mangrove_propagule", 4));
+        // Villager spawn eggs
+        container.addItem(new ItemStack("minecraft:villager_spawn_egg", 16));
+        // Seeds - 64 of each type
+        container.addItem(new ItemStack("minecraft:wheat_seeds", 64));
+        container.addItem(new ItemStack("minecraft:beetroot_seeds", 64));
+        container.addItem(new ItemStack("minecraft:melon_seeds", 64));
+        container.addItem(new ItemStack("minecraft:pumpkin_seeds", 64));
+        container.addItem(new ItemStack("minecraft:torchflower_seeds", 64));
+        container.addItem(new ItemStack("minecraft:pitcher_pod", 64));
+        container.addItem(new ItemStack("minecraft:carrot", 64));
+        container.addItem(new ItemStack("minecraft:potato", 64));
+      }
+    }
   } else {
     // Respawn after death: keep X/Z, fix Y only
     console.warn(`[mattflat] Teleporting ${player.name} to surface`);
-    player.teleport({ x: pos.x, y: 46, z: pos.z });
+    player.teleport({ x: pos.x, y: SURFACE_Y, z: pos.z });
   }
 
   player.sendMessage("Welcome to MattFlat! You have been teleported to the surface.");
