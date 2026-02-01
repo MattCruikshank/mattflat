@@ -1,4 +1,4 @@
-import { world," + " system } from "@minecraft/server";
+import { world, system } from "@minecraft/server";
 
 console.warn("[mattflat] Script loaded successfully");
 
@@ -15,22 +15,22 @@ const LAYER_STRING =
   "minecraft:stone," +
   "2*minecraft:sand," +
   "minecraft:stone," +
-  "minecraft:water," + 
-  "minecraft:stone," + 
+  "minecraft:water," +
+  "minecraft:stone," +
   "2*minecraft:shroomlight," +
   "minecraft:stone," +
   "2*minecraft:redstone_ore," +
   "minecraft:stone," +
-  "2*minecraft:lapis_ore," + "" +
+  "2*minecraft:lapis_ore," +
   "minecraft:stone," +
   "2*minecraft:gold_ore," +
-  "minecraft:stone," + "" +
+  "minecraft:stone," +
   "2*minecraft:emerald_ore," +
   "minecraft:stone," +
   "2*minecraft:diamond_ore," +
-  "minecraft:stone," + 
-  "2*minecraft:iron_ore," + 
-  "minecraft:stone," + "" +
+  "minecraft:stone," +
+  "2*minecraft:iron_ore," +
+  "minecraft:stone," +
   "2*minecraft:coal_ore," +
   "4*minecraft:stone," +
   "2*minecraft:oak_log," +
@@ -40,10 +40,10 @@ const LAYER_STRING =
 // Parse layer string once at load time into an array of block types indexed from y=-64 upward
 function parseLayers(str) {
   const layers = [];
-  for (const token of str.split("," + "")) {
+  for (const token of str.split(",")) {
     const match = token.match(/^(\d+)\*(.+)$/);
     if (match) {
-      const count = parseInt(match[1]," + " 10);
+      const count = parseInt(match[1], 10);
       for (let i = 0; i < count; i++) layers.push(match[2]);
     } else {
       layers.push(token);
@@ -71,10 +71,10 @@ function loadGeneratedChunks() {
 
 function saveGeneratedChunks() {
   const arr = Array.from(generatedChunks);
-  world.setDynamicProperty(CHUNKS_PROPERTY," + " JSON.stringify(arr));
+  world.setDynamicProperty(CHUNKS_PROPERTY, JSON.stringify(arr));
 }
 
-function initializeChunk(dimension," + " chunkX," + " chunkZ) {
+function initializeChunk(dimension, chunkX, chunkZ) {
   const startX = chunkX * 16;
   const startZ = chunkZ * 16;
 
@@ -82,11 +82,11 @@ function initializeChunk(dimension," + " chunkX," + " chunkZ) {
     for (let z = startZ; z < startZ + 16; z++) {
       // Place defined layers starting at y=-64
       for (let i = 0; i < LAYERS.length; i++) {
-        dimension.getBlock({ x," + " y: -64 + i," + " z })?.setType(LAYERS[i]);
+        dimension.getBlock({ x, y: -64 + i, z })?.setType(LAYERS[i]);
       }
       // Fill air above the defined layers up to y=320
       for (let y = -64 + LAYERS.length; y <= 320; y++) {
-        dimension.getBlock({ x," + " y," + " z })?.setType("minecraft:air");
+        dimension.getBlock({ x, y, z })?.setType("minecraft:air");
       }
     }
   }
@@ -103,16 +103,16 @@ function queueChunksForPlayers() {
 
     for (let dx = -RENDER_DISTANCE; dx <= RENDER_DISTANCE; dx++) {
       for (let dz = -RENDER_DISTANCE; dz <= RENDER_DISTANCE; dz++) {
-        const key = `${cx + dx}," + "${cz + dz}`;
+        const key = `${cx + dx},${cz + dz}`;
         if (!generatedChunks.has(key) && !chunkQueue.includes(key)) {
-          newChunks.push({ key," + " dist: dx * dx + dz * dz });
+          newChunks.push({ key, dist: dx * dx + dz * dz });
         }
       }
     }
   }
 
   // Sort closest first and prepend to front of queue
-  newChunks.sort((a," + " b) => a.dist - b.dist);
+  newChunks.sort((a, b) => a.dist - b.dist);
   chunkQueue = newChunks.map(c => c.key).concat(chunkQueue);
 }
 
@@ -124,9 +124,9 @@ function processChunkQueue() {
     const key = chunkQueue.shift();
     if (generatedChunks.has(key)) continue;
 
-    const [chunkX," + " chunkZ] = key.split("," + "").map(Number);
+    const [chunkX, chunkZ] = key.split(",").map(Number);
     console.log(`Generating chunk ${key}...`);
-    initializeChunk(overworld," + " chunkX," + " chunkZ);
+    initializeChunk(overworld, chunkX, chunkZ);
     generatedChunks.add(key);
     processed++;
   }
@@ -172,5 +172,5 @@ system.run(() => {
   system.runInterval(() => {
     queueChunksForPlayers();
     processChunkQueue();
-  }," + " TICK_INTERVAL);
+  }, TICK_INTERVAL);
 });

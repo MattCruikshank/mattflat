@@ -5,17 +5,22 @@ echo "...done"
 # read
 
 echo "Removing world data..."
-rm -rf minecraft/worlds/MattFlat/*
-echo "...done"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+WORLDS_DIR="$SCRIPT_DIR/../../worlds/MattFlat"
+
+# echo "$SCRIPT_DIR"
+# echo "$WORLDS_DIR"
+
 # read
 
-echo "Copying world_behavior_packs.json..."
-mkdir -p minecraft/worlds/MattFlat
-cp minecraft/behavior_packs/mattflat/world_behavior_packs.json minecraft/worlds/MattFlat/
+rm -rf "$WORLDS_DIR"/*
 echo "...done"
-# read
+
+echo "Copying world_behavior_packs.json..."
+mkdir -p "$WORLDS_DIR"
+cp "$SCRIPT_DIR/world_behavior_packs.json" "$WORLDS_DIR/"
+echo "...done"
 
 echo "Starting server..."
 docker start binhex-minecraftbedrockserver
 echo "...done"
-
